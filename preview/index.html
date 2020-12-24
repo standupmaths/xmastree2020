@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>FinFiddle</title>
+<script id="vshader" type="x-shader/x-vertex">
+attribute vec3 pos;
+attribute vec4 colorIn;
+uniform float pointSize;
+varying vec4 color;
+
+void main()
+{
+    gl_PointSize = pointSize;
+    color = colorIn;
+    gl_Position = vec4(pos.xyz, 3.0);
+}
+</script>
+<script id="fshader" type="x-shader/x-fragment">
+#ifdef GL_ES
+precision mediump float;
+#endif
+varying vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+</script>
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  display: flex;
+  height: 100%;
+}
+
+textarea#source {
+  flex: 1 1 50%;
+}
+
+canvas#preview {
+  flex: 1 1 50%;
+}
+</style>
+<main>
+<textarea id="source" readonly>Loading...</textarea>
+<canvas id="preview"></canvas>
+</main>
+<pre id="output" ></pre>
+<pre id="Python/coords.txt" class="coords"></pre>
+<script src="http://www.skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="http://www.skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<script type="module" src="render.js" async></script>
