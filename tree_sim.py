@@ -26,8 +26,9 @@ class TreeSimulator2000:
         # Starts the matplotlib in a different thread
         self.plot_thread = threading.Thread(target=self._animate, daemon=True)
         self.plot_thread.start()
-        self.changed = False
-        self.should_update = False
+        # True to make update get called once
+        self.changed = True
+        self.should_update = True
 
     def set_pixel(self, led_i, r, g, b):
         self.colors[led_i] = self._rgb_to_rgba(r, g, b)
@@ -42,7 +43,7 @@ class TreeSimulator2000:
         self.fig = pyplot.figure()
         self.ax = Axes3D(self.fig)
         self.ax.set_facecolor((0.0, 0.27, 0.10))
-        self.ax.view_init(elev=0.0, azim=0.0)
+        self.ax.view_init(azim=18.0, elev=12.0)
         self.h = self.ax.scatter(self.x_vals, self.y_vals, self.z_vals, c=self.colors)
         self.ani = FuncAnimation(self.fig, self._update, interval=16)
         pyplot.show()
@@ -55,6 +56,10 @@ class TreeSimulator2000:
 
         self.ax.clear()
         self.h = self.ax.scatter(self.x_vals, self.y_vals, self.z_vals, c=self.colors)
+        # Make x,y,z proportional
+        self.ax.set_xlim3d(-400, 400)
+        self.ax.set_ylim3d(-400, 400)
+        self.ax.set_zlim3d(-400, 400)
 
     def _rgb_to_rgba(self, r, g, b):
         """
