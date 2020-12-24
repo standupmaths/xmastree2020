@@ -43,7 +43,7 @@ def transition_function(rule_num_or_name, states, neighbors):
         raise NotImplementedError("Haven't written this yet.")
 
 
-def update_colors(num, points):
+def update_colors(num, points, ax):
     global color_map, state_map, nbrs, change_mavg
     state_map = transition_function("conway", state_map, indices)
     change_mavg = change_history[-1] * ((mavg_window-1)/mavg_window) + np.mean(state_map)
@@ -57,6 +57,7 @@ def update_colors(num, points):
     points.set_color(new_colors)
     points._facecolor3d = points.get_facecolor()
     points._edgecolor3d = points.get_edgecolor()
+    ax.view_init(elev=30., azim=num)
     return points
 
 fig = plt.figure()
@@ -66,7 +67,7 @@ x, y, z = np.transpose(coords)
 points = ax.scatter(x, y, z, c=color_map)
 
 line_coords = [np.transpose([coords[line[0]], coords[line[1]]]) for line in lines]
-#plotted_lines = [ax.plot(*lc) for lc in line_coords]
+plotted_lines = [ax.plot(*lc, linewidth=1) for lc in line_coords]
 
 get_range = lambda l: [min(l), max(l)]
 ax.set_xlim3d(get_range(x))
@@ -76,10 +77,10 @@ ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 ax.set_title('3D Tree')
-
+plt.savefig("lines.png")
 # Creating the Animation object
-line_ani = animation.FuncAnimation(fig, update_colors, 300, fargs=(points, ),
+line_ani = animation.FuncAnimation(fig, update_colors, 300, fargs=(points, ax),
                                    interval=50, blit=False)
-# line_ani.save('conway.gif', writer='imagemagick', fps=30) # uncomment to save
+line_ani.save('conway_orbit.gif', writer='imagemagick', fps=30) # uncomment to save
 
 plt.show()
