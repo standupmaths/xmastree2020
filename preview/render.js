@@ -1,4 +1,4 @@
-globalThis.DELAY_MS = 250;
+globalThis.treeShowDelayMs = 250;
 
 function createShader(gl, type, source) {
   const shader = gl.createShader(type);
@@ -28,16 +28,54 @@ function loadVertices() {
   return vertices;
 }
 
+/**
+ * @param {string} source
+ * @param {AbortSignal} abortSignal
+ */
+async function runCurrentScript(source, abortSignal) {
+  let shouldRun = true;
+
+  function interruptHandler(susp) {
+    if (shouldRun !== true) {
+      throw new Error('interrupt');
+    }
+    return null;
+  }
+
+  abortSignal.addEventListener('abort', () => {
+    shouldRun = false;
+  });
+
+  try {
+    await Sk.misceval.asyncToPromise(() => {
+      return Sk.importMainWithBody("<stdin>", false, source, true);
+    }, {"*": interruptHandler});
+  } catch (e) {
+    if (e.message !== 'interrupt') {
+      console.log(e);
+    }
+  }
+}
+
 async function runProgram() {
   /**
    * Load initial data:
    */
   const coordsSource = await fetch('../coords.txt').then(res => res.text());
   document.querySelector('pre.coords').textContent = coordsSource + '\n';
-  const spinSource = await fetch('../xmaslights-spin.py').then(res => res.text());
-  document.getElementById('source').textContent = spinSource + '\n';
 
-  const source = document.getElementById('source').textContent;
+  if (location.hash.length > 1) {
+    document.getElementById('source').textContent = atob(location.hash.slice(1));
+  } else {
+    const spinSource = await fetch('../xmaslights-spin.py')
+      .then(res => res.text());
+    document.getElementById('source').textContent = spinSource + '\n';
+  }
+
+  const editor = CodeMirror.fromTextArea(document.getElementById('source'), {
+    lineNumbers: true,
+    mode: 'python',
+  });
 
   const vertices = loadVertices();
 
@@ -133,7 +171,7 @@ var $builtinmodule = ${function () {
           // TODO: Maybe use animation frame..?
           Sk.setTimeout(() => {
             resolve(Sk.builtin.none.none$);
-          }, DELAY_MS);
+          }, treeShowDelayMs);
         });
       })());
     });
@@ -141,6 +179,24 @@ var $builtinmodule = ${function () {
 
   return mod;
 }};`;
+
+  Sk.onAfterImport = (library) => {
+    switch (library) {
+      case 're': {
+        // HACK: Get support for re.sub
+        const re = Sk.sysmodules.entries.re.rhs.$d;
+        re.sub = new Sk.builtin.func((pattern, replacement, original) => {
+          const patternStr = Sk.ffi.remapToJs(pattern);
+          const replStr = Sk.ffi.remapToJs(replacement);
+          const originalStr = Sk.ffi.remapToJs(original);
+          // TODO: Do this properly, maybe using other re.* things.
+          const regex = new RegExp(patternStr, 'g');
+          return new Sk.builtin.str(originalStr.replace(regex, replStr));
+        });
+        break;
+      }
+    }
+  };
 
   Sk.pre = 'output';
   Sk.configure({
@@ -154,24 +210,36 @@ var $builtinmodule = ${function () {
       }
       let fileContents = Sk.builtinFiles["files"][filename];
 
-      // HACK
-      if (filename === 'src/lib/re.js') {
-        fileContents = fileContents.replace('__name__:', `sub: new Sk.builtin.func(function (pattern, replacement, original) {
-            const patternStr = Sk.ffi.remapToJs(pattern);
-            const replStr = Sk.ffi.remapToJs(replacement);
-            const originalStr = Sk.ffi.remapToJs(original);
-            // TODO: Do this properly, maybe using other re.* things.
-            const regex = new RegExp(patternStr, 'g');
-            return new Sk.builtin.str(originalStr.replace(regex, replStr));
-          }),__name__:`);
-      }
-
       return fileContents;
     },
   });
 
-  await Sk.misceval.asyncToPromise(() => {
-    return Sk.importMainWithBody("<stdin>", false, source, true);
+  editor.on('change', () => {
+    const currentSource = editor.getValue();
+    const base64 = btoa(currentSource);
+    location.hash = base64;
+  });
+
+  /**
+   * @type {AbortController|null}
+   */
+  let lastAbort = null;
+
+  async function handleRunButtonClick() {
+    if (lastAbort !== null) {
+      lastAbort.abort();
+    }
+
+    const abort = new AbortController();
+    lastAbort = abort;
+
+    await runCurrentScript(editor.getValue(), abort.signal);
+  }
+
+  handleRunButtonClick();
+
+  document.getElementById('play-btn').addEventListener('click', (e) => {
+    handleRunButtonClick();
   });
 }
 runProgram();
