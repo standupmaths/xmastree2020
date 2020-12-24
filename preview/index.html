@@ -48,6 +48,10 @@ canvas#preview {
 <div class="execution">
   <form>
     <button type="button" id="play-btn" title="Play">▶</button>
+    <label>
+      <input type="checkbox" id="rotate-check" />
+      Rotate Tree
+    </label>
   </form>
   <canvas id="preview"></canvas>
 </div>
@@ -58,13 +62,14 @@ canvas#preview {
 attribute vec3 pos;
 attribute vec4 colorIn;
 uniform float pointSize;
+uniform mat4 vMatrix;
 varying vec4 color;
 
 void main()
 {
     gl_PointSize = pointSize;
     color = colorIn;
-    gl_Position = vec4(pos.xyz, 3.0);
+    gl_Position = vMatrix * vec4(pos.xyz, 3.0);
 }
 </script>
 <script id="fshader" type="x-shader/x-fragment">

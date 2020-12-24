@@ -101,14 +101,30 @@ async function runProgram() {
   }
   gl.useProgram(program);
 
+  let lastColors = new Uint8Array(500 * 4);
+
+  let angleZ = 0;
+
   /**
    * @param {Uint8Array} colors
    */
   function renderPixels(colors) {
+    lastColors = colors;
+
     gl.viewport(0, 0,
       gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clearColor(0.05, 0.05, 0.05, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const vMatrixLoc = gl.getUniformLocation(program, 'vMatrix');
+    var cos = Math.cos(angleZ);
+    var sin = Math.sin(angleZ);
+    gl.uniformMatrix4fv(vMatrixLoc, false, [
+      cos, 0, sin, 0,
+      0, 1, 0, 0,
+      -sin, 0, cos, 0,
+      0, 0, 0, 1,
+    ]);
 
     const colorOffset = vertices.byteLength;
 
@@ -237,6 +253,33 @@ var $builtinmodule = ${function () {
   }
 
   handleRunButtonClick();
+
+  let shouldRotate = false;
+  document.getElementById('rotate-check').addEventListener('click', (e) => {
+    if (shouldRotate) {
+      shouldRotate = false;
+      return;
+    }
+
+    let lastT = 0;
+    shouldRotate = true;
+    function doRotate(t) {
+      if (!shouldRotate) return;
+
+      if (lastT === 0) {
+        lastT = t;
+      } else {
+        const dt = t - lastT;
+        lastT = t;
+
+        const scaledInc = dt * 0.001;
+        angleZ = (angleZ + scaledInc) % 360;
+        renderPixels(lastColors);
+      }
+      requestAnimationFrame(doRotate);
+    }
+    requestAnimationFrame(doRotate);
+  });
 
   document.getElementById('play-btn').addEventListener('click', (e) => {
     handleRunButtonClick();
