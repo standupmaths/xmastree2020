@@ -19,8 +19,8 @@ def draw_light(ax, led_coordinates, color):
     y = np.sin(u)*np.sin(v)
     z = np.cos(v)
 
-    # This should be 1/255, however the default figure is then too dark
-    scale_factor = 1/55
+    # This should be 1/255.0, however the default figure is then too dark
+    scale_factor = 1/55.0
 
     ax.plot_wireframe(led_coordinates[0] + x,
                       led_coordinates[1] + y,
