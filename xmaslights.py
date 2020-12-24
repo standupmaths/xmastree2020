@@ -1,8 +1,5 @@
-# refactored by pikuch 24.12.2020
-
 import time
 import math
-from xmastrees import VirtualXmasTree, XmasTree
 
 # You are welcome to add any of these:
 # import random
@@ -15,8 +12,7 @@ from xmastrees import VirtualXmasTree, XmasTree
 # some_value = int(sys.argv[0])
 
 
-# original function
-def xmaslight(tree):
+def xmaslights(tree):
 
     # VARIOUS SETTINGS
     
@@ -96,38 +92,3 @@ def xmaslight(tree):
             direction = 1
         if c >= tree.max_z - buffer:
             direction = -1
-
-
-def spirolight(tree):
-    # starting angle for each color channel (in radians)
-    angles = [0.0] * 3
-    # how much the angle changes per cycle
-    delta_angles = [1/5, 1/7, 1/9]
-    # maximum intensity of any one colour channel
-    max_intensity = 100
-
-    while True:
-        for led in range(len(tree.coords)):
-            rotation = math.atan2(tree.coords[led].y, tree.coords[led].x)
-            colour = [max_intensity * (math.sin(angles[0] + rotation) + 1) / 2,
-                      max_intensity * (math.sin(angles[1] + rotation) + 1) / 2,
-                      max_intensity * (math.sin(angles[2] + rotation) + 1) / 2]
-            tree.set_led_RGB(led, colour)
-
-        tree.display()
-
-        # update angles
-        for i in range(len(angles)):
-            angles[i] = math.fmod(angles[i] + delta_angles[i], 2 * math.pi)
-
-
-def run_lights():
-    coord_filename = "Python/coords.txt"
-    tree = VirtualXmasTree(coord_filename)
-    spirolight(tree)
-    # tree = XmasTree(coord_filename)
-    # xmaslight(tree)
-
-
-if __name__ == "__main__":
-    run_lights()
