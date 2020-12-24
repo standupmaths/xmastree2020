@@ -1,5 +1,7 @@
 # xmastree2020 - Conway's Game of Life
 
+Top level script is [xmaslights-cellular-automata.py](https://github.com/kevroy314/xmastree2020/blob/main/xmaslights-cellular-automata.py)
+
 This implementation involves the following 3 steps (plus some initialization):
 
 0. Initialize a color map (spatial modulus, in this case), random states, and a random "history" used for deciding when to stop
