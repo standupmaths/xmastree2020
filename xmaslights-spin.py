@@ -1,14 +1,18 @@
-def xmaslight():
+def xmaslight(simulate=False):
     # This is the code from my 
     
     #NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
     
     # Here are the libraries I am currently using:
     import time
-    import board
-    import neopixel
     import re
     import math
+
+    if simulate:
+        from tree_sim import TreeSimulator2000
+    else:
+        import board
+        import neopixel
     
     # You are welcome to add any of these:
     # import random
@@ -40,7 +44,10 @@ def xmaslight():
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
     
-    pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    if simulate:
+        pixels = TreeSimulator2000(coords)
+    else:
+        pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
     
     
     # YOU CAN EDIT FROM HERE DOWN
@@ -141,4 +148,4 @@ def xmaslight():
 
 
 # yes, I just put this at the bottom so it auto runs
-xmaslight()
+xmaslight(True)
