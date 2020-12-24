@@ -78,7 +78,8 @@ ax.set_zlabel('Z')
 ax.set_title('3D Tree')
 
 # Creating the Animation object
-line_ani = animation.FuncAnimation(fig, update_colors, 25, fargs=(points, ),
+line_ani = animation.FuncAnimation(fig, update_colors, 300, fargs=(points, ),
                                    interval=50, blit=False)
+# line_ani.save('conway.gif', writer='imagemagick', fps=30) # uncomment to save
 
 plt.show()
