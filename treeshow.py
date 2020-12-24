@@ -1,4 +1,5 @@
 from xmastrees import VirtualXmasTree, XmasTree
+# user patterns
 from spirolight import spirolight
 from xmaslights import xmaslights
 
