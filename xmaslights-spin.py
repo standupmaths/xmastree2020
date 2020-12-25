@@ -12,7 +12,7 @@ def xmaslight():
     
     # You are welcome to add any of these:
     # import random
-    # import numpy
+    import numpy
     # import scipy
     # import sys
     
@@ -22,21 +22,9 @@ def xmaslight():
     
     # IMPORT THE COORDINATES (please don't break this bit)
     
-    coordfilename = "Python/coords.txt"
-	
-    fin = open(coordfilename,'r')
-    coords_raw = fin.readlines()
-    
-    coords_bits = [i.split(",") for i in coords_raw]
-    
-    coords = []
-    
-    for slab in coords_bits:
-        new_coord = []
-        for i in slab:
-            new_coord.append(int(re.sub(r'[^-\d]','', i)))
-        coords.append(new_coord)
-    
+    coordfilename = "Python/coords.dat"
+    coords = numpy.genfromtxt(coordfilename, dtype=int)
+
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
     
