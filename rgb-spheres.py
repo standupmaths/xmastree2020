@@ -49,7 +49,7 @@ def xmaslight():
 	# YOU CAN EDIT FROM HERE DOWN
 
 	# Calculates the distance of 2 vectors
-	def vdist(v1, v2):
+	def vdist(v1: list, v2: list):
 		if len(v1) != len(v2):
 			return -1
 
@@ -58,25 +58,55 @@ def xmaslight():
 			result += (v1[i] - v2[i]) ** 2
 		return math.sqrt(result)
 
-	# init the spheres. Each sphere originates at a random LED
-	sphere_origins = [ coords[random.randint(0, PIXEL_COUNT)],
-	                   coords[random.randint(0, PIXEL_COUNT)],
-					   coords[random.randint(0, PIXEL_COUNT)] ]
-	radii = [0, 0, 0]
+	# Find coordinate that maximizes the distance for a given sez of other coords
+	def find_furthest(points: list):
+		max_dist = 0
+		cur_pnt = points[0]
+		for coord in coords:
+			dist = math.inf
+			for p in points:
+				p_dist = vdist(p, coord)
+				if p_dist < dist:
+					dist = p_dist
+
+			if (dist > max_dist):
+				max_dist = dist
+				cur_pnt = coord
+		return cur_pnt
+
+
+	# init sphere origins.
+	# First sphere's origin is furthest from the coordinate system's origin
+	# Second sphere's origin is the LED with the greatest distance from the first sphere's origin
+	# Third sphere's origin is the LED where the distance for both other spheres is maximized.
+	sphere_origins = []
+	sphere_origins.append(find_furthest([[0, 0, 0]]))
+	sphere_origins.append(find_furthest(sphere_origins))
+	sphere_origins.append(find_furthest(sphere_origins))
+
 
 	# calculate maximum distance of any LED for each sphere's origin.
 	# Used to determine the max radius each sphere will ever receive
 	max_dists = [0, 0, 0]
-	for i in range(PIXEL_COUNT):
-		for s in range(3):
-			dist = vdist(coords[i], sphere_origins[s])
-			if max_dists[s] < dist:
-				max_dists[s] = dist
+	for coord in coords:
+		for i in range(3):
+			dist = vdist(coord, sphere_origins[i])
+			if max_dists[i] < dist:
+				max_dists[i] = dist
 
-	# The rate in which each sphere enlargens. When negative, the sphere is currently shrinking
+	# The rate in which each sphere enlargens. When negative, the sphere is currently shrinking.
 	increment_rates = [0, 0, 0]
+	# The radius of each sphere. Initial value is randomized
+	radii = [0, 0, 0]
+
+	# set initial increment rates and radii 
 	for i in range(3):
-		increment_rates[i] = max_dists[i] / (40 + random.random() * 60) # between 40 and 100 frames
+		# Frames per cycle for current sphere
+		frames = i * 30 + 120
+		increment_rates[i] = max_dists[i] / frames
+
+		# Random start radius 
+		radii[i] = random.random() * frames * increment_rates[i]
 
 	# infinitly many frames. Wohoo.
 	while True:
@@ -86,14 +116,14 @@ def xmaslight():
 			color = [0, 0, 0]
 			for s in range(3):
 				dist = abs(vdist(sphere_origins[s], coords[i]) - radii[s])
-				color[s] = int(255 * dist / max_dists[s])
+				color[s] = int(255 * (1 - dist / max_dists[s]) ** 2)
 
 			pixels[i] = color
 		pixels.show()
 		
 		# calculate radii for next iteration.
 		for s in range(3):
-			# Switch from enlarging to shrinking and vice versa, when needed
+			# Switch from enlarging to shrinking and vice versa, as needed
 			new_radius = radii[s] + increment_rates[s]
 			if new_radius >= max_dists[s] or new_radius <= 0:
 				increment_rates[s] = -increment_rates[s]
