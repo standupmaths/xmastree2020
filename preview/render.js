@@ -104,6 +104,8 @@ async function runProgram() {
   var maxBrightness = 50;
   controls.autoRotateSpeed = -2;
 
+  
+
   vertices.forEach(([x, z, y]) => {
     var geometry = new THREE.SphereGeometry(3);
     geometry.translate(x, y, z);
@@ -111,6 +113,32 @@ async function runProgram() {
     var sphere = new THREE.Mesh( geometry, material );
     scene.add( sphere );
   })
+
+  const material = new THREE.LineBasicMaterial({
+    color: 0x00FF00
+  });
+  for (var i = 0; i < 7; i++) {
+    const points = [];
+    points.push( new THREE.Vector3( -300, -450, i*100 - 300 ) );
+    points.push( new THREE.Vector3( 300, -450, i*100 - 300 ) );
+
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+    const line = new THREE.Line( geometry, material.clone() );
+    scene.add( line );
+  }
+
+  for (var i = 0; i < 7; i++) {
+    const points = [];
+    points.push( new THREE.Vector3( i*100 - 300, -450,  -300) );
+    points.push( new THREE.Vector3( i*100 - 300, -450, 300 ) );
+
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+    const line = new THREE.Line( geometry, material.clone() );
+    scene.add( line );
+  }
+  
 
   var animate = function () {
     requestAnimationFrame( animate );
