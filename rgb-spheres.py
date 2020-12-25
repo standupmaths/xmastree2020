@@ -12,9 +12,9 @@ def xmaslight():
 	import re
 	import math
 	import random
-	import numpy
 	
 	# You are welcome to add any of these:
+	# import numpy
 	# import scipy
 	# import sys
 	
@@ -84,7 +84,6 @@ def xmaslight():
 	sphere_origins.append(find_furthest(sphere_origins))
 	sphere_origins.append(find_furthest(sphere_origins))
 
-
 	# calculate maximum distance of any LED for each sphere's origin.
 	# Used to determine the max radius each sphere will ever receive
 	max_dists = [0, 0, 0]
@@ -102,7 +101,7 @@ def xmaslight():
 	# set initial increment rates and radii 
 	for i in range(3):
 		# Frames per cycle for current sphere
-		frames = i * 30 + 120
+		frames = i * 40 + 120
 		increment_rates[i] = max_dists[i] / frames
 
 		# Random start radius 
@@ -116,11 +115,10 @@ def xmaslight():
 			color = [0, 0, 0]
 			for s in range(3):
 				dist = abs(vdist(sphere_origins[s], coords[i]) - radii[s])
-				color[s] = int(255 * (1 - dist / max_dists[s]) ** 2)
+				color[s] = int(255 * (1 - dist / max_dists[s]) ** 3)
 
 			pixels[i] = color
 		pixels.show()
-		
 		# calculate radii for next iteration.
 		for s in range(3):
 			# Switch from enlarging to shrinking and vice versa, as needed
@@ -129,7 +127,6 @@ def xmaslight():
 				increment_rates[s] = -increment_rates[s]
 
 			radii[s] += increment_rates[s]
-	
 	return 'DONE'
 
 # yes, I just put this at the bottom so it auto runs
