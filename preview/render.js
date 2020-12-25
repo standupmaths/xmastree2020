@@ -86,25 +86,27 @@ async function runProgram() {
 
   var scene = new THREE.Scene();
   scene.background = new THREE.Color( 0x0 );
-  var camera = new THREE.PerspectiveCamera( 75, preview.clientWidth/preview.clientHeight, 0.1, 1000 );
+  var camera = new THREE.PerspectiveCamera( 75, preview.clientWidth/preview.clientHeight, 0.1, 2000 );
 
   var renderer = new THREE.WebGLRenderer();
+
+  const controls = new OrbitControls( camera, preview );
   
   renderer.setSize( preview.clientWidth, preview.clientHeight );
   preview.appendChild( renderer.domElement );
 
-  camera.position.y = -800;
-  camera.rotation.x = Math.PI/2;
-  let r = 800;
-  let angle = 0;
-  var baseSpeed = 0.003;
+  //camera.position.y = -800;
+  //camera.rotation.x = Math.PI/2;
+  camera.position.set(-800, 480, 140)
+  controls.update();
+  controls.autoRotate = true;
+  
   var maxBrightness = 50;
-  var speed = baseSpeed;
+  controls.autoRotateSpeed = -2;
 
-  vertices.forEach(([x, y, z]) => {
+  vertices.forEach(([x, z, y]) => {
     var geometry = new THREE.SphereGeometry(3);
     geometry.translate(x, y, z);
-    //console.log("hi")
     var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
     var sphere = new THREE.Mesh( geometry, material );
     scene.add( sphere );
@@ -113,11 +115,7 @@ async function runProgram() {
   var animate = function () {
     requestAnimationFrame( animate );
 
-    angle += speed;
-      
-    camera.position.y = r * Math.cos(angle) * -1;
-    camera.position.x = r * Math.sin(angle);
-    camera.rotation.y = angle;
+    controls.update();
   
     renderer.render( scene, camera );
   };
@@ -255,11 +253,7 @@ var $builtinmodule = ${function () {
     
     let { target: { checked }} = e;
 
-    if( checked ) {
-      speed = baseSpeed;
-    } else {
-      speed = 0;
-    }
+    controls.autoRotate = checked;
     
   });
 
@@ -267,10 +261,7 @@ var $builtinmodule = ${function () {
     
     let { target: { value }} = e;
 
-    baseSpeed = Number(value)
-    if(speed != 0) {
-      speed = baseSpeed;
-    }
+    controls.autoRotateSpeed = Number(value)
     
   });
 
