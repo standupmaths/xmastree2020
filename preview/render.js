@@ -85,6 +85,7 @@ async function runProgram() {
   
 
   var scene = new THREE.Scene();
+  scene.background = new THREE.Color( 0x0 );
   var camera = new THREE.PerspectiveCamera( 75, preview.clientWidth/preview.clientHeight, 0.1, 1000 );
 
   var renderer = new THREE.WebGLRenderer();
@@ -96,11 +97,12 @@ async function runProgram() {
   camera.rotation.x = Math.PI/2;
   let r = 800;
   let angle = 0;
-  const baseSpeed = 0.003;
+  var baseSpeed = 0.003;
+  var maxBrightness = 50;
   var speed = baseSpeed;
 
   vertices.forEach(([x, y, z]) => {
-    var geometry = new THREE.SphereGeometry(10);
+    var geometry = new THREE.SphereGeometry(3);
     geometry.translate(x, y, z);
     //console.log("hi")
     var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
@@ -136,7 +138,7 @@ async function runProgram() {
       
       if(material) {
 
-        material.color.setRGB(r/255, g/255, b/255)
+        material.color.setRGB(r/maxBrightness, g/maxBrightness, b/maxBrightness)
         material.needsUpdate = true;
       }
 
@@ -166,14 +168,10 @@ var $builtinmodule = ${function () {
     $loc.__init__ = new Sk.builtin.func(initNeoPixel);
 
     $loc.__setitem__ = new Sk.builtin.func((self, offset, value) => {
-      const [r, g, b] = Sk.ffi.remapToJs(value);
+      const [g, r, b] = Sk.ffi.remapToJs(value);
       const scaledOffset = Sk.ffi.remapToJs(offset);
       
       self.pixels[scaledOffset] = { r, g, b };
-      
-      // self.pixels[scaledOffset + 0] = g;
-      // self.pixels[scaledOffset + 2] = b;
-      // self.pixels[scaledOffset + 3] = 255; // alpha
       
       return value;
     });
@@ -257,13 +255,37 @@ var $builtinmodule = ${function () {
     
     let { target: { checked }} = e;
 
-    //debugger;
     if( checked ) {
       speed = baseSpeed;
     } else {
       speed = 0;
     }
     
+  });
+
+  document.getElementById('rotation-speed').addEventListener('change', (e) => {
+    
+    let { target: { value }} = e;
+
+    baseSpeed = Number(value)
+    if(speed != 0) {
+      speed = baseSpeed;
+    }
+    
+  });
+
+  document.getElementById('max-brightness').addEventListener('change', (e) => {
+    
+    let { target: { value }} = e;
+
+    maxBrightness = Number(value)
+  });
+
+  document.getElementById('background-color').addEventListener('change', (e) => {
+    
+    let { target: { value }} = e;
+    //debugger;
+    scene.background.setHex(parseInt(value.replace("#", "0x")))
   });
 
   document.getElementById('play-btn').addEventListener('click', (e) => {
