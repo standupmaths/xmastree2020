@@ -46,12 +46,20 @@ def xmaslight():
     # YOU CAN EDIT FROM HERE DOWN
     
     # I get a list of the heights which is not overly useful here other than to set the max and min altitudes
-    heights = []
+    xs = []
+    ys = []
+    zs = []
     for i in coords:
-        heights.append(i[2])
-    
-    min_alt = min(heights)
-    max_alt = max(heights)
+        xs.append(i[0])
+        ys.append(i[1])
+        zs.append(i[2])
+
+    min_x = min(xs)
+    max_x = max(xs)
+    min_y = min(ys)
+    max_y = max(ys)
+    min_z = min(zs)
+    max_z = max(zs)
     
     # VARIOUS SETTINGS
     
@@ -132,9 +140,9 @@ def xmaslight():
         # and we move the rotation point
         c += direction*dinc
         
-        if c <= min_alt+buffer:
+        if c <= min_z+buffer:
             direction = 1
-        if c >= max_alt-buffer:
+        if c >= max_z-buffer:
             direction = -1
         
     return 'DONE'
