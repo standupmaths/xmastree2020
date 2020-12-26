@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 plt.style.use("dark_background")
 
-coords = list(map(eval, open("Python/coords.txt").readlines()))
+coords = list(map(eval, open("coords.txt").readlines()))
 x = list(c[0] for c in coords)
 y = list(c[1] for c in coords)
 z = list(c[2] for c in coords)
