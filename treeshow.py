@@ -8,6 +8,7 @@ from wavesoflight import wavesoflight
 def run_lights():
     coord_filename = "Python/coords.txt"
 
+    # choose the tree to use
     # tree = XmasTree(coord_filename)
     tree = VirtualXmasTree(coord_filename)
 
