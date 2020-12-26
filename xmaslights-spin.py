@@ -7,7 +7,6 @@ def xmaslight():
     import time
     import board
     import neopixel
-    import re
     import math
     
     # You are welcome to add any of these:
@@ -27,15 +26,10 @@ def xmaslight():
     fin = open(coordfilename,'r')
     coords_raw = fin.readlines()
     
-    coords_bits = [i.split(",") for i in coords_raw]
-    
-    coords = []
-    
-    for slab in coords_bits:
-        new_coord = []
-        for i in slab:
-            new_coord.append(int(re.sub(r'[^-\d]','', i)))
-        coords.append(new_coord)
+    coords = [
+	    list(map(
+		    int, i.strip("[").strip("]").split(",")
+	    )) for i in coords_raw]
     
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
@@ -46,10 +40,7 @@ def xmaslight():
     # YOU CAN EDIT FROM HERE DOWN
     
     # I get a list of the heights which is not overly useful here other than to set the max and min altitudes
-    heights = []
-    for i in coords:
-        heights.append(i[2])
-    
+    heights = [z for x, y, z in coords]
     min_alt = min(heights)
     max_alt = max(heights)
     
@@ -117,16 +108,12 @@ def xmaslight():
         
         if angle >= 0.5*math.pi:
             if swap01 == 0:
-                colour_hold = [i for i in colourA]
-                colourA =[i for i in colourB]
-                colourB = [i for i in colour_hold]
+		colorA, colorB = list(colorB), list(colorA)
                 swap01 = 1
                 
         if angle >= 1.5*math.pi:
             if swap02 == 0:
-                colour_hold = [i for i in colourA]
-                colourA =[i for i in colourB]
-                colourB = [i for i in colour_hold]
+                colorA, colorB = list(colorB), list(colorA)
                 swap02 = 1
         
         # and we move the rotation point
@@ -140,5 +127,5 @@ def xmaslight():
     return 'DONE'
 
 
-# yes, I just put this at the bottom so it auto runs
-xmaslight()
+if __name__ == "__main__":
+    xmaslight()
