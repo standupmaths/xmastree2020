@@ -123,14 +123,15 @@ def fadeColours(currentColour, fadeToColour, fadePerCycle = 1.0):
 		return new_colour
 
 
-def vectorNorm(vector1, vector2):
+def vectorNorm(vector1, vector2 = [0,0,0]):
 	if hasattr(vector1, "__len__") and hasattr(vector2, "__len__") and (len(vector1) == len(vector2)):
 		norm = 0
 		index = 0
 		while index < len(vector1):
-			norm += (vector1[index] - vector2[index])
+			norm += (vector1[index] - vector2[index])*(vector1[index] - vector2[index])
 			index += 1
-		return (norm)
+		# print(norm)
+		return math.sqrt(norm)
 
 
 def xmaslight():
