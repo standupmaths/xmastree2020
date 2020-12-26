@@ -109,9 +109,9 @@ def xmaslight():
                 # XXX: reuse depth for sin offset here, to add some variation to the plane position
                 dist = np.dot(planeDir, coords[LED]) + depth + PLANE_DISTANCE*math.sin(depth + run / TIME_DIVIDER)
                 falloff = FALLOFF / max(1.0, dist ** 2.0)
-                pixColor += np.multiply(color, falloff) / len(planes)
+                pixColor += np.multiply(color, falloff)
 
-            linearColor = clamp(0.0, 1.0, pixColor)
+            linearColor = clamp(0.0, 1.0, pixColor) / len(planes)
             gammaCorrected = np.power(linearColor, 1.0 / 2.2)
             pixels[LED] = list(gammaCorrected * BRIGHTNESS)
             LED += 1
