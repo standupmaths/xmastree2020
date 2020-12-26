@@ -5,8 +5,8 @@ def xmaslight():
     
     # Here are the libraries I am currently using:
     import time
-    import board
-    import neopixel
+    ##import board
+    ##import neopixel
     import re
     import math
     
@@ -40,7 +40,7 @@ def xmaslight():
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
     
-    pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    ##pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
     
     
     # YOU CAN EDIT FROM HERE DOWN
@@ -80,70 +80,63 @@ def xmaslight():
     
     # the two colours in GRB order
     # if you are turning a lot of them on at once, keep their brightness down please
-    colourA = [0,50,50] # purple
-    colourB = [50,50,0] # yellow
-    
-    
-    # INITIALISE SOME VALUES
-    
-    swap01 = 0
-    swap02 = 0
-    
-    # direct it move in
-    direction = -1
-    
-    # the starting point on the vertical axis
-    c = 100 
-    
-    # yes, I just run which run is true
+    colourA = [0,100,0] # red
+    colourB = [25,75,0] # orange
+    colourC = [90, 90, 0]  # yellow
+    colourD = [75, 0, 0]  # green
+    colourE = [75, 0, 75]  # teal
+    colourF = [0, 0, 75]  # blue
+    colourG = [0, 25, 75]  # indigo
+    colourH = [0, 50, 75]  # violet
     run = 1
     while run == 1:
         
         time.sleep(slow)
         
         LED = 0
+        pixels = [[0,0,0] for i in range(len(coords))] ## just a placeholder for now
         while LED < len(coords):
-            if math.tan(angle)*coords[LED][1] <= coords[LED][2]+c:
-                pixels[LED] = colourA
+            if coords[LED][0] < 0:
+                if coords[LED][1] < 0:
+                    if coords[LED][2] < 0:
+                        pass
+                        pixels[LED] = colourA
+                    else:
+                        pass
+                        pixels[LED] = colourB
+                else:
+                    if coords[LED][2] < 0:
+                        pass
+                        pixels[LED] = colourC
+                    else:
+                        pass
+                        pixels[LED] = colourD
             else:
-                pixels[LED] = colourB
+                if coords[LED][1] < 0:
+                    if coords[LED][2] < 0:
+                        pass
+                        pixels[LED] = colourE
+                    else:
+                        pass
+                        pixels[LED] = colourF
+                else:
+                    if coords[LED][2] < 0:
+                        pass
+                        pixels[LED] = colourG
+                    else:
+                        pass
+                        pixels[LED] = colourH
             LED += 1
-        
+            print(pixels)
         # use the show() option as rarely as possible as it takes ages
         # do not use show() each time you change a LED but rather wait until you have changed them all
-        pixels.show()
+        ##pixels.show()
         
         # now we get ready for the next cycle
-        
-        angle += inc
-        if angle > 2*math.pi:
-            angle -= 2*math.pi
-            swap01 = 0
-            swap02 = 0
-        
-        # this is all to keep track of which colour is 'on top'
-        
-        if angle >= 0.5*math.pi:
-            if swap01 == 0:
-                colour_hold = [i for i in colourA]
-                colourA =[i for i in colourB]
-                colourB = [i for i in colour_hold]
-                swap01 = 1
-                
-        if angle >= 1.5*math.pi:
-            if swap02 == 0:
-                colour_hold = [i for i in colourA]
-                colourA =[i for i in colourB]
-                colourB = [i for i in colour_hold]
-                swap02 = 1
-        
-        # and we move the rotation point
-        c += direction*dinc
-        
-        if c <= min_z+buffer:
-            direction = 1
-        if c >= max_z-buffer:
-            direction = -1
+        # We do this similarly to how Matt did his translating plane effect: use a static spatial coloring function,
+        # but rotate all of the LEDs!
+
+        #Do rotate-y stuff here
         
     return 'DONE'
 
