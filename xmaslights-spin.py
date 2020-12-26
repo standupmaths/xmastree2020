@@ -12,7 +12,7 @@ def xmaslight():
     
     # You are welcome to add any of these:
     # import random
-    # import numpy
+    import numpy as np
     # import scipy
     # import sys
     
@@ -45,7 +45,7 @@ def xmaslight():
     
     # YOU CAN EDIT FROM HERE DOWN
     
-    # I get a list of the heights which is not overly useful here other than to set the max and min altitudes
+    # I get a list of the coordinates which is not overly useful here other than to set the max and min coordinates
     xs = []
     ys = []
     zs = []
@@ -60,24 +60,10 @@ def xmaslight():
     max_y = max(ys)
     min_z = min(zs)
     max_z = max(zs)
-    
-    # VARIOUS SETTINGS
-    
-    # how much the rotation points moves each time
-    dinc = 1
-    
-    # a buffer so it does not hit to extreme top or bottom of the tree
-    buffer = 200
-    
-    # pause between cycles (normally zero as it is already quite slow)
+
     slow = 0
-    
-    # startin angle (in radians)
-    angle = 0
-    
-    # how much the angle changes per cycle
-    inc = 0.1
-    
+
+
     # the two colours in GRB order
     # if you are turning a lot of them on at once, keep their brightness down please
     colourA = [0,100,0] # red
@@ -94,40 +80,40 @@ def xmaslight():
         time.sleep(slow)
         
         LED = 0
-        pixels = [[0,0,0] for i in range(len(coords))] ## just a placeholder for now
+        coordmat = np.asmatrix(coords,dtype=np.float64).transpose()
+        pixels = [[0,0,0] for i in range(len(coords))] ## just a placeholder for now; remove later
+        RotMat = np.matrix(
+            [
+                [1., 0., 0.],
+                [0., 1., 0.],
+                [0., 0., 1.]
+            ]
+        ) #Identity Matrix for now
+        coordmat = np.matmul(RotMat,coordmat)
         while LED < len(coords):
-            if coords[LED][0] < 0:
-                if coords[LED][1] < 0:
-                    if coords[LED][2] < 0:
-                        pass
+            if coordmat[0, LED] < 0:
+                if coordmat[1, LED] < 0:
+                    if coordmat[2, LED] < 0:
                         pixels[LED] = colourA
                     else:
-                        pass
                         pixels[LED] = colourB
                 else:
-                    if coords[LED][2] < 0:
-                        pass
+                    if coordmat[2, LED] < 0:
                         pixels[LED] = colourC
                     else:
-                        pass
                         pixels[LED] = colourD
             else:
-                if coords[LED][1] < 0:
-                    if coords[LED][2] < 0:
-                        pass
+                if coordmat[1, LED] < 0:
+                    if coordmat[2,LED] < 0:
                         pixels[LED] = colourE
                     else:
-                        pass
                         pixels[LED] = colourF
                 else:
-                    if coords[LED][2] < 0:
-                        pass
+                    if coordmat[2, LED] < 0:
                         pixels[LED] = colourG
                     else:
-                        pass
                         pixels[LED] = colourH
             LED += 1
-            print(pixels)
         # use the show() option as rarely as possible as it takes ages
         # do not use show() each time you change a LED but rather wait until you have changed them all
         ##pixels.show()
@@ -137,6 +123,7 @@ def xmaslight():
         # but rotate all of the LEDs!
 
         #Do rotate-y stuff here
+        print(coordmat)
         
     return 'DONE'
 
