@@ -3,12 +3,21 @@
 # Written by baruch@ibn-labs.com
 # Enjoy!
 
+import sys
 import time
-from sim import board
-from sim import neopixel
 import re
 import math
 from math import sin, pi
+
+# activate simulation if he "--sim" flag is set
+if '--sim' in sys.argv:
+    print("Simulation Mode - starting")
+    from sim import board
+    from sim import neopixel
+else:
+    print("The real tree shopuld light up now!")
+    import board
+    import neopixel
 
 # some utility functions:
 
@@ -64,6 +73,15 @@ def catesian_to_spherical(p):
         p[3]  # preserve time coordinate
     ]
 
+
+def catesian_to_cylindrical(p):
+    return [
+        math.sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]),
+        math.atan2(p[1], p[0]),
+        p[2],  # preserve z coordinate,
+        p[3]  # preserve time coordinate
+    ]
+
 # the animation loop
 
 
@@ -108,10 +126,9 @@ def xmaslight(f, duration=0, **kwargs):
         dt = t_now-t
         t = t_now
         # debug - print the interval between shows
-        print(f"dt {dt:.0f} ms")
+        #print(f"dt {dt:.0f} ms")
 
         for LED in range(len(coords)):
-            # pixels[LED] = clamp01([sin(t), sin(t), sin(t)])
             pixels[LED] = clamp_scale_0_255(f(coords[LED] + [t], **kwargs))
 
         pixels.show()
@@ -127,17 +144,17 @@ colourA = [0, 50, 50]  # purple
 colourB = [50, 50, 0]  # yellow
 
 # wave plane vector moving both in time and in z
-W = (0, 0, 0.01, 2)
+W = (0, 0, 0.005, 3)
 
 
 def blink(X, c0=[0, 0, 0], c1=[1, 1, 1], **kwargs):
     "The simplest animation - on-off as a function of time"
-    t = X[3]  # time component of space+time 
+    t = X[3]  # time component of space+time
     return c1 if t % 2 > 1 else c0
 
 
 def sin_t(X, c0=[0, 0, 0], c1=[1, 1, 1], **kwargs):
-    "Fade by a sine. Note that negative values are clamped to c0 (black)"
+    "Fade by a sine. Note that negative values are clamped to c0 (black) so it should be black most of the time"
     t = X[3]
     r = sin(t)
     return inter(c0, c1, r)
@@ -155,15 +172,31 @@ def planar_wave(X, W=(0, 0, -0.01, 2), f1d=lambda p: 0.5+0.5*sin(p), p0=0, c0=[0
     return inter(c0, c1, f1d(p))
 
 
-def planar_wave_multicolor(X, W=(0, 0, -0.01, 2), f1d=lambda p: 0.5+0.5*sin(p), p0=0, colors=[[0, 0, 0], [0, 1, 0], [0,0,0], [0, 0, 1]], **kwargs):
+def planar_wave_multicolor(X, W=(0, 0, -0.01, 2), f1d=lambda p: 0.5+0.5*sin(p), p0=0, colors=[[0, 0, 0], [0, 1, 0], [0, 0, 0], [0, 0, 1]], **kwargs):
     "  A planar wave modulated by a 1d function f1d, the scalar value is used to interpolate from colors"
     p = dot(X, W) + p0    # phase (starting with phase 0)
     s = f1d(p)            # scalar value
     n = len(colors)       # number of colors in color map
     c0 = colors[math.floor(s) % n]
     c1 = colors[(math.floor(s)+1) % n]
-    r = s - math.floor(s) # fraction for interpolation
+    r = s - math.floor(s)  # fraction for interpolation
     return inter(c0, c1, r)
+
+
+c = 299792458  # m/s
+
+
+def gravitational_time_dilation(X, z0=-6378000, g=10, **kwargs):
+    """
+    approximation when gh << c2
+    z0 is the z coordinate of the center of mass (origin is the tip of the tree, z pointing down)
+    g is the acceleration
+    """
+    global c
+    h = X[2]-z0
+    td = 1+g*h/c/c
+    return [X[0], X[1], X[2], X[3]*td]
+
 
 def coord_transformer(X, T, ff, **kwargs):
     "Chain - apply a function f on coordinates transformed by function T"
@@ -172,49 +205,73 @@ def coord_transformer(X, T, ff, **kwargs):
 
 
 def add_f(fA, fB, **kwargs):
-    "Combunation - addition of two animations"
+    "Combination - addition of two animations"
     return fA(**kwargs) + fB(**kwargs)
 
 
 def mult_f(fA, fB, **kwargs):
-    "Combunation - multiplication of two animations"
+    "Combination - multiplication of two animations"
     return fA(**kwargs) * fB(**kwargs)
 
 
 # yes, I just put this at the bottom so it auto runs
-print("blink")
-xmaslight(blink, duration=10)
+# print("blink")
+# xmaslight(blink, duration=10)
 
-print("blink with different colors")
-xmaslight(blink, duration=7, c0=colourA, c1=colourB)
+# print("blink with different colors")
+# xmaslight(blink, duration=7, c0=colourA, c1=colourB)
 
-print("Soft blink with sin(wt) (negative is black)")
-xmaslight(sin_t, c0=[0, 0, 0], c1=[1, 1, 0], duration=10)
+# print("Soft blink with sin(wt) (negative is black)")
+# xmaslight(sin_t, c0=[0, 0, 0], c1=[1, 1, 0], duration=10)
 
-print("sine of [x,y,z,t]")
-xmaslight(sin_x, W=W, c0=colourA, duration=15)
+# print("sine of [x,y,z,t]")
+# xmaslight(sin_x, W=W, c0=colourA, duration=5)
 
-print("sine of [x,y,z,t] using a general plannar wave function")
-xmaslight(planar_wave, W=(0, 0.01, 0.01, 4), c0=colourB, duration=15)
+# print("sine of [x,y,z,t] using a general plannar wave function")
+# xmaslight(planar_wave, W=(0, 0.01, -0.01, 4), c0=colourA, c1=colourB, duration=15)
 
-print("a linear wave interpolated with multiple colors")
-xmaslight(planar_wave_multicolor, f1d=lambda x:x, W=(0, 0.01, 0.01, 4), colors=[[1,0,0],[1,1,0],[0,1,0],[0,1,1],[0,0,1],[1,0,1]], duration=25)
+# print("a linear wave interpolated with multiple colors")
+# xmaslight(planar_wave_multicolor, f1d=lambda x: x,
+#           W=(0, 0.01, 0.01, 4),                                       # direction of wavefront
+#           colors=[[1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1], [1, 0, 1]],   # color map
+#           duration=25)
 
-print("A square wave on spherical coordinates using coordinates transformer")
+print("A square wave on spherical coordinates using coordinate transformer")
 xmaslight(coord_transformer,
-          T=lambda X, TC, **kwargs: catesian_to_spherical(vdiff(TC,X)),  
+          T=lambda X, TC, a=0, **kwargs: catesian_to_spherical(vdiff(TC, [X[0], X[1], X[2], X[3] + a*X[3]*X[3]])),
           ff=planar_wave,
           f1d=lambda p: sin(p)*4,
-          TC=[0,0, -150, 0], # center
-          W=(-0.008, 0, 0, 5), c0=[0,0,0], c1=[1,1,0.4], 
-          duration=15)
+          TC=[0, 0, -150, 0],  # center
+          W=(-0.008, 0, 0, 5), c0=[0, 0, 1], c1=[1, 1, 0.4],
+          a = 0.08, # acceleration
+          duration=20)
 
-print("A cylindrical sharp cutoff 4 color wave - spherical coordinates using coordinates transformer")
+print("A cylindrical, sharp cutoff, 4 color wave - cylindrical coordinates")
 xmaslight(coord_transformer,
-          T=lambda X, TC, **kwargs: catesian_to_spherical(vdiff(TC,X)),  
+          T=lambda X, TC, **kwargs: catesian_to_cylindrical(vdiff(TC, X)),
           ff=planar_wave_multicolor,
           f1d=lambda x: math.floor(x),
-          TC=[0,0, -150, 0], # center
-          W=(0.0, 2/pi, 0, 5), 
-          colors=[[0,0,0], [0,1,0], [0,0,0], [0,0,1]],
-          duration=0)
+          TC=[0, 0, -150, 0],  # center
+          W=(0.0, 2/pi, 0, 5),
+          colors=[[0, 0, 0], [0, 1, 0], [0, 0, 0], [0, 0, 1]],
+          duration=10)
+
+print("A cylindrical, with time dilation, will spiral with time")
+xmaslight(
+    lambda X, **kwargs:
+        planar_wave_multicolor(
+            X=catesian_to_cylindrical( gravitational_time_dilation(X, **kwargs)), **kwargs),
+    f1d=lambda x: math.floor(x),
+    TC=[0, 0, -150, 0],  # center
+    W=(0.0, 2/pi, 0, 1),
+    colors=[[0, 0, 0], [0, 1, 0], [0, 0, 0], [1, 0, 0]],
+    z0= -3000, g = 5*c*c*1e-5, # bigger tree on a more massive planet
+    duration=40)
+
+print("Blink with time dilation, time is moving faster at the top")
+xmaslight(
+    lambda X, **kwargs:
+        blink(
+            X=catesian_to_cylindrical( gravitational_time_dilation(X, **kwargs)), **kwargs),
+    z0= -3000, g = 5*c*c*1e-5, # bigger tree on a more massive planet
+    duration=0)
