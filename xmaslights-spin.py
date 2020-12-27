@@ -74,23 +74,20 @@ def xmaslight():
     colourF = [0, 0, 75]  # blue
     colourG = [0, 25, 75]  # indigo
     colourH = [0, 50, 75]  # violet
+
     run = 1
+    coordmat = np.asmatrix(coords,
+                           dtype=np.float64).transpose()  # Put LED coordinates into appropriate numpy matrix form to prepare for rotations.
+
     while run == 1:
         
         time.sleep(slow)
         
         LED = 0
-        coordmat = np.asmatrix(coords,dtype=np.float64).transpose()
-        pixels = [[0,0,0] for i in range(len(coords))] ## just a placeholder for now; remove later
-        RotMat = np.matrix(
-            [
-                [1., 0., 0.],
-                [0., 1., 0.],
-                [0., 0., 1.]
-            ]
-        ) #Identity Matrix for now
-        coordmat = np.matmul(RotMat,coordmat)
+        pixels = [[0,0,0] for i in range(len(coords))] ## just a placeholder for now to make code compile; remove later
+
         while LED < len(coords):
+            # Check which octant LED lives in
             if coordmat[0, LED] < 0:
                 if coordmat[1, LED] < 0:
                     if coordmat[2, LED] < 0:
@@ -116,13 +113,52 @@ def xmaslight():
             LED += 1
         # use the show() option as rarely as possible as it takes ages
         # do not use show() each time you change a LED but rather wait until you have changed them all
-        ##pixels.show()
+        ##pixels.show() ##Won't work until hardware is available.
         
         # now we get ready for the next cycle
         # We do this similarly to how Matt did his translating plane effect: use a static spatial coloring function,
         # but rotate all of the LEDs!
 
         #Do rotate-y stuff here
+        #Rotation Matrix ##Identity Matrix for now
+
+        # Small scalar amount (in radians) to rotate for one timestep of animation (plays role of "inc" variable in Matt's original code)
+        theta = 0.1
+        # UNIT vector axis about which to rotate for one timestep of animation
+        ux = 1.
+        uy = 0.
+        uz = 0.
+
+        u = np.matrix(
+            [
+                [ux],
+                [uy],
+                [uz]
+            ]
+        )
+
+        UX = np.matrix( #Cross Product Matrix
+            [
+                [0., -uz, uy],
+                [uz, 0., -ux],
+                [-uy, ux, 0.]
+            ]
+        )
+
+        UXU = np.matmul(u,u.transpose()) #Generate Outer Product
+
+        I = np.matrix( #Identity Matrix
+            [
+                [1., 0., 0.],
+                [0., 1., 0.],
+                [0., 0., 1.]
+            ]
+        )
+
+        # Setup rotation matrix using R = \cos(\theta) I + \sin(\theta) UX + (1 - \cos(\theta)) UXU (Rodrigues' Rotation Formula)
+        RotMat = np.cos(theta) * I + np.sin(theta) * UX + (1 - np.cos(theta)) * UXU
+
+        coordmat = np.matmul(RotMat,coordmat) #Rotate all LEDs on tree according to RotMat
         print(coordmat)
         
     return 'DONE'
