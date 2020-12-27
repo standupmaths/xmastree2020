@@ -5,8 +5,8 @@ def xmaslight():
     
     # Here are the libraries I am currently using:
     import time
-    ##import board
-    ##import neopixel
+    import board
+    import neopixel
     import re
     import math
     
@@ -40,7 +40,7 @@ def xmaslight():
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
     
-    ##pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
     
     
     # YOU CAN EDIT FROM HERE DOWN
@@ -66,14 +66,14 @@ def xmaslight():
 
     # the two colours in GRB order
     # if you are turning a lot of them on at once, keep their brightness down please
-    colourA = [0,100,0] # red
-    colourB = [25,75,0] # orange
-    colourC = [90, 90, 0]  # yellow
-    colourD = [75, 0, 0]  # green
-    colourE = [75, 0, 75]  # teal
-    colourF = [0, 0, 75]  # blue
-    colourG = [0, 25, 75]  # indigo
-    colourH = [0, 50, 75]  # violet
+    colourA = [0,50,0] # red
+    colourB = [13,38,0] # orange
+    colourC = [45, 45, 0]  # yellow
+    colourD = [38, 0, 0]  # green
+    colourE = [38, 0, 38]  # teal
+    colourF = [0, 0, 38]  # blue
+    colourG = [0, 13, 38]  # indigo
+    colourH = [0, 25, 38]  # violet
 
     run = 1
     coordmat = np.asmatrix(coords,
@@ -84,10 +84,10 @@ def xmaslight():
         time.sleep(slow)
         
         LED = 0
-        pixels = [[0,0,0] for i in range(len(coords))] ## just a placeholder for now to make code compile; remove later
+        ##pixels = [[0,0,0] for i in range(len(coords))] ## Dan Walsh used this line to test the code without actually having the LEDs available
 
         while LED < len(coords):
-            # Check which octant LED lives in
+            # Check which octant LED lives in to generate colored octahedron
             if coordmat[0, LED] < 0:
                 if coordmat[1, LED] < 0:
                     if coordmat[2, LED] < 0:
@@ -113,14 +113,14 @@ def xmaslight():
             LED += 1
         # use the show() option as rarely as possible as it takes ages
         # do not use show() each time you change a LED but rather wait until you have changed them all
-        ##pixels.show() ##Won't work until hardware is available.
+        pixels.show() ## Dan Walsh had to comment this out since he doesn't have LEDs. Won't work until hardware is available.
         
         # now we get ready for the next cycle
         # We do this similarly to how Matt did his translating plane effect: use a static spatial coloring function,
         # but rotate all of the LEDs!
 
         #Do rotate-y stuff here
-        #Rotation Matrix ##Identity Matrix for now
+        #Rotation Matrix
 
         # Small scalar amount (in radians) to rotate for one timestep of animation (plays role of "inc" variable in Matt's original code)
         theta = 0.1
