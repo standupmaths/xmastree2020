@@ -20,6 +20,6 @@ class neopixel:
             self.pixels[index] = (color[1] / 255.0, color[0] / 255.0, color[2] / 255.0, 1)
 
         def show(self):
+            self.ax.cla()
             self.ax.scatter(x, y, z, c=self.pixels)
             plt.pause(1 / 1000)
-            self.ax.cla()
