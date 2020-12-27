@@ -77,9 +77,6 @@ async function runProgram() {
 
   const vertices = loadVertices();
 
-  
-  //document.body.appendChild( renderer.domElement );
-
   /** @type {HTMLCanvasElement} */
   const preview = document.getElementById('preview');
   
@@ -94,6 +91,14 @@ async function runProgram() {
   
   renderer.setSize( preview.clientWidth, preview.clientHeight );
   preview.appendChild( renderer.domElement );
+
+  // Auto resize preview renderer.
+  const resizeObserver = new ResizeObserver(entries => {
+    preview.width = preview.clientWidth
+    preview.height = preview.clientHeight
+    renderer.setSize( preview.clientWidth, preview.clientHeight );
+  });
+  resizeObserver.observe( preview );
 
   //camera.position.y = -800;
   //camera.rotation.x = Math.PI/2;
