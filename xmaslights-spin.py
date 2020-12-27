@@ -9,6 +9,7 @@ def xmaslight():
     import neopixel
     import re
     import math
+    import json
     
     # You are welcome to add any of these:
     # import random
@@ -24,18 +25,8 @@ def xmaslight():
     
     coordfilename = "Python/coords.txt"
 	
-    fin = open(coordfilename,'r')
-    coords_raw = fin.readlines()
-    
-    coords_bits = [i.split(",") for i in coords_raw]
-    
-    coords = []
-    
-    for slab in coords_bits:
-        new_coord = []
-        for i in slab:
-            new_coord.append(int(re.sub(r'[^-\d]','', i)))
-        coords.append(new_coord)
+    with open(coordfilename,'r') as fin:
+        coords = list(map(json.loads, fin.readlines()))
     
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
