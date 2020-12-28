@@ -1,15 +1,18 @@
+# a couple of input parameters up at the top for clarity
+quantum = True # whether to use quantum interference pattern or just random bit flips
+max_brightness = 128 # maximum pixel brightness
+
 # This file contains
 # * MicroQiskit (https://github.com/qiskit-community/MicroQiskit/blob/master/README.md)
 # * `make_line` from QuantumBlur (https://github.com/qiskit-community/QuantumBlur/blob/master/README.md)
 # Both are licensed under Apache 2.0, copyright of IBM Research and written by James R. Wootton (@quantumjim)
 
-
-# First import the allowed libraries being used
+# First import the allowed libraries
 import time
 try:
     import board
     import neopixel
-except:
+except: # use a simulator when the actual hardware is not present
     from sim import board
     from sim import neopixel
 import re
@@ -37,8 +40,6 @@ for slab in coords_bits:
 PIXEL_COUNT = len(coords) # this should be 500
 
 pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-
-max_brightness = 128
 
 # We also need MicroQiskit, a minimal version of the 'Qiskit' framework for quantum computing.
 # Since external files aren't allowed, I'll just dump it here
@@ -284,6 +285,24 @@ def simulate(qc,shots=1024,get='counts',noise_model=[]):
         return counts
     
 ######## MicroQiskit ends here
+
+# We'll also use the `make_line` function from QuantumBlur
+# see https://github.com/qiskit-community/QuantumBlur/blob/master/README.md for more info
+def make_line ( length ):
+    # number of bits required
+    n = int(math.ceil(math.log(length)/math.log(2)))
+    # iteratively build list
+    line = ['0','1']
+    for j in range(n-1):
+        # first append a reverse-ordered version of the current list
+        line = line + line[::-1]
+        # then add a '0' onto the end of all bit strings in the first half
+        for j in range(int(float(len(line))/2)):
+            line[j] += '0'
+        # and a '1' for the second half
+        for j in range(int(float(len(line))/2),int(len(line))):
+            line[j] += '1'     
+    return line
     
     
 # Quantum computers output bit strings, so to control the lights with a (simulation of) a quantum computer,
@@ -299,69 +318,67 @@ def simulate(qc,shots=1024,get='counts',noise_model=[]):
 # of locality.
 
 
-# for each coordinate, get the height and radius
-radii = {}
-heights = {}
+# these magic numbers define the quadrant boundaries
+# they were found semi manually, and split the points evenly
+theta0 = [-math.pi/2+0.39,0+0.07,math.pi/2+0.025]
+x0,y0 = -21,-26
+# with this, we create four lists of points, one for each quadrant
+quadrants = [[] for _ in range(4)]
 for x,y,z in coords:
-    radii[x,y,z] = math.sqrt(x**2+y**2)
-    heights[x,y,z] = z
+    theta = math.atan2(y-y0,x-x0)
+    q = (theta>theta0[0]) + (theta>theta0[1]) + (theta>theta0[2])
+    quadrants[q].append((x,y,z))
     
-# we'll sort the coords into 32 bins of 16 items each
-bin_size = 16
-bin_num = int(512/bin_size)
-bins = [[] for _ in range(bin_num) ]
-    
-# first we sort by height
-for j,coord in enumerate(sorted(heights, key=heights.get)):
-    bins[int(j/bin_size)].append(coord)
-    
-# then the bins are sorted by radius
-for b in range(bin_num):
-    
-    bin_radii = {}
-    for coord in bins[b]:
-        bin_radii[coord] = radii[coord]
-            
-    new_bin = []
-    for coord in sorted(bin_radii, key=bin_radii.get):
-        new_bin.append(coord)
+# we'll sort the 125 coords of each quadrant into 16 bins with a max of 8 items each
+bin_size = 8
+bin_num = 16
+bins = [[[] for _ in range(bin_num)] for _ in range(4)]
 
-    bins[b] = new_bin
+for q,quadrant in enumerate(quadrants):
     
+    # for each coordinate, get the height and radius
+    radii = {}
+    heights = {}
+    for x,y,z in quadrant:
+        radii[x,y,z] = math.sqrt(x**2+y**2)
+        heights[x,y,z] = z
     
+    # first we sort by height
+    for j,coord in enumerate(sorted(heights, key=heights.get)):
+        bins[q][int(j/bin_size)].append(coord)
+
+    # then the bins are sorted by radius
+    for b in range(bin_num):
+
+        bin_radii = {}
+        for coord in bins[q][b]:
+            bin_radii[coord] = radii[coord]
+
+        new_bin = []
+        for coord in sorted(bin_radii, key=bin_radii.get):
+            new_bin.append(coord)
+
+        bins[q][b] = new_bin
+        
 # now we make lists of bit strings in which neighbouring strings have a Hamming distance of 1
-# for this we steal the `make_line` function from QuantumBlur
-# see https://github.com/qiskit-community/QuantumBlur/blob/master/README.md for more info
-def make_line ( length ):
-    
-    # number of bits required
-    n = int(math.ceil(math.log(length)/math.log(2)))
-    
-    # iteratively build list
-    line = ['0','1']
-    for j in range(n-1):
-        # first append a reverse-ordered version of the current list
-        line = line + line[::-1]
-        # then add a '0' onto the end of all bit strings in the first half
-        for j in range(int(float(len(line))/2)):
-            line[j] += '0'
-        # and a '1' for the second half
-        for j in range(int(float(len(line))/2),int(len(line))):
-            line[j] += '1'
-            
-    return line
 
-# we'll use one to assign bit strings to bins
+# for the four quadrants we need the four strings of 2 bits
+# quadrant 1 neighbours 0 and 2, so its string should differ from theirs by one bit
+# we do that by assigning 01 to quarant 1, 00 to quadrant 0 and 11 to quadrant 1
+# this also works for all the other sets of neighbours
+quadrants_line = ['00','01','11','10']
+
+# a similar list of bit strings will be used to assign bit strings to bins, and other for entries in bins
+# we'll use `make_line` to generate these for us
 bins_line = make_line(bin_num)
-
-# and the other to assign bit strings to entries in the bins
 bin_line = make_line(bin_size)
 
-# with this we assign a bit string to each coord
+# with these we assign a bit string to each coord
 bit_strings = {}
-for b in range(bin_num):
-     for j,coord in enumerate(bins[b]):
-            bit_strings[bins_line[b] + bin_line[j]] = coord
+for q in range(4):
+    for b in range(bin_num):
+         for j,coord in enumerate(bins[q][b]):
+                bit_strings[quadrants_line[q] + bins_line[b] + bin_line[j]] = coord
            
         
 # Now we are all set up, we can twinkle some Christmas lights!
@@ -392,10 +409,15 @@ def xmaslight():
         ket = simulate(qc,get='statevector')
         qc = QuantumCircuit(n)
         qc.initialize(ket)
-
-        # add rotations for each qubit (with the random angles)
-        for j in range(n):
-            qc.rx(theta[j],j)
+        
+        if quantum:
+            # add rotations for each qubit (with the random angles)
+            for j in range(n):
+                qc.rx(theta[j],j)
+        else:
+            # just do a random bit flip
+            j = random.choice(range(n))
+            qc.x(j)
 
         # get probs for each output bit string
         probs = simulate(qc,get='probabilities_dict')
@@ -405,7 +427,7 @@ def xmaslight():
         colour = {}
         for bit_string,coord in bit_strings.items():
             c = int(probs[bit_string]*max_brightness/max_prob)
-            colour[coord] = (c,c,c)
+            colour[coord] = (0,c,c)
 
         # update all the pixels
         for j,coord in enumerate(coords):
