@@ -285,7 +285,7 @@ def xmaslight():
 		time.sleep(slow)
 		
 		max_search_radius = max_size/math.sqrt(number_of_forks_to_use)
-		print(str(fork_coords_indices[0]))
+		# print(str(fork_coords_indices[0]))
 		# Recalculate forks
 		index = 0
 		while index < number_of_forks_to_use:
