@@ -8,6 +8,7 @@ Everything else here is under the same license as the rest of the repo.
 Two optional inputs can be supplied when running the file.
 The first is a 1 or 0, to determine whether to implement a quantum interference pattern or just use random bit flips.
 The second is the maxmimum pixel brightness. By default, quantum is on and the max brightness is 128.
+The third is whethe
 
 
 ==== Summary of the Method ====
@@ -437,7 +438,7 @@ def xmaslight():
         if quantum:
             # add rotations for each qubit (with the random angles)
             for j in range(n):
-                qc.rx(theta[j],j)
+                qc.ry(theta[j],j)
         else:
             # just do a random bit flip
             j = random.choice(range(n))
