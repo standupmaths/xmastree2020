@@ -1,14 +1,8 @@
 # Here are the libraries I am currently using:
 import time
 
-try:
-    import board
-    import neopixel
-except:
-    # My own simulator
-    from tree_sim import board
-    from tree_sim import neopixel
-
+import board
+import neopixel
 import re
 import math
 
