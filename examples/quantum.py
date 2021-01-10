@@ -1,6 +1,15 @@
 '''
 This file is written by James R. Wootton (@quantumjim).
 
+=== Dependencies ===
+
+To run this file you'll need MicroQiskit. This is a minimal version of the 'Qiskit' framework for quantum computing.
+It just needs you to download the microqiskit.py from the following link
+https://github.com/qiskit-community/MicroQiskit/blob/master/microqiskit.py
+and then put it somewhere importable (such as in the same folder as this file).
+
+=== Inputs ===
+
 Two optional inputs can be supplied when running the file.
 The first is a 1 or 0, to determine whether to implement a quantum interference pattern or just use random bit flips.
 The second is the maxmimum pixel brightness. By default, quantum is on and the max brightness is 128.
@@ -55,11 +64,6 @@ except: # use a simulator when the actual hardware is not present
     from sim import neopixel
 import re
 import math
-
-# We also need MicroQiskit, a minimal version of the 'Qiskit' framework for quantum computing.
-# For this you'll need to download the microqiskit.py from the following link
-# https://github.com/qiskit-community/MicroQiskit/blob/master/microqiskit.py
-# and then put it somewhere importable (such as in the same folder as this file).
 from microqiskit import *
 
 # We'll also use a `make_line` function which does the same job as the one from QuantumBlur
