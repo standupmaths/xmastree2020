@@ -1,13 +1,56 @@
-# a couple of input parameters up at the top for clarity
-quantum = True # whether to use quantum interference pattern or just random bit flips
-max_brightness = 128 # maximum pixel brightness
+'''
+This file contains
+* MicroQiskit (https://github.com/qiskit-community/MicroQiskit/blob/master/README.md)
+* `make_line` from QuantumBlur (https://github.com/qiskit-community/QuantumBlur/blob/master/README.md)
+Both are licensed under Apache 2.0, copyright of IBM Research and written by James R. Wootton (@quantumjim)
+Everything else here is under the same license as the rest of the repo.
 
-# This file contains
-# * MicroQiskit (https://github.com/qiskit-community/MicroQiskit/blob/master/README.md)
-# * `make_line` from QuantumBlur (https://github.com/qiskit-community/QuantumBlur/blob/master/README.md)
-# Both are licensed under Apache 2.0, copyright of IBM Research and written by James R. Wootton (@quantumjim)
+Two optional inputs can be supplied when running the file.
+The first is a 1 or 0, to determine whether to implement a quantum interference pattern or just use random bit flips.
+The second is the maxmimum pixel brightness. By default, quantum is on and the max brightness is 128.
 
-# First import the allowed libraries
+
+==== Summary of the Method ====
+
+Quantum computers output bit strings, so to control the lights with a (simulation of) a quantum computer,
+we need to assign a bit string to each light. For 500 lights we'll use 9 bits (since that allows 512)
+
+Now imagine a graph for which each vertex is labelled by a bit string, and vertices are connected by an
+edge if their bit strings differ on only a single bit. This is a graph on which a random walk can be
+implemented simply by randomly choosing and flipping one of the bits.
+
+Unfortunately, this graph is a 9-dimensional hypercube and not a Christmas tree. Nethertheless, we can
+try to assign bit strings to the lights on the tree such that those for neighbouring lights differ on as
+few bits as possible.
+Once we've done this, we can implement an approximation of a random walk on the tree by implementing a
+random walk on the hypercube, simply by randomly choosing and flipping a bit. That's what this program
+will do if `quantum=False`, but it's not really what this program is about. After all, there are easier
+and better ways a random walk could be run on the tree.
+
+Instead we implement a continuous quantum analogue of a random walk, a simple form of so-called 'quantum walk'.
+There are multiple forms of quantum walk that people have looked at, for multiple different reasons. The one
+we use is the one that requires the least resources to to simulate. I won't go on about it here. See
+https://github.com/qiskit-community/Quantumblur
+if you are interested. The important point is that it naturally runs on a hypercube, which is why we need to do
+hypercube stuff.
+
+The method to project the hypercube onto a Christmas tree is fairly simple, but it seems to work okay.
+First we sort the points by height into32 bins, and then sort the 16 elements in each bin by radius.
+This gives a nice pair of coordinates to convert into binary, which should preserve some degree of locality.
+'''
+
+# First get user supplied parameters
+import  sys
+if len(sys.argv)>1:
+    quantum = sys.argv[1]=='1'
+else:
+    quantum = True
+if len(sys.argv)>2:
+    max_brightness = int(sys.argv[2])
+else:
+    max_brightness = 128
+
+# Now let's import everything we need
 import time
 try:
     import board
@@ -18,34 +61,10 @@ except: # use a simulator when the actual hardware is not present
 import re
 import math
 
-# Now we need the coordinates for the lights, taken from Matt's file
-
-coordfilename = "Python/coords.txt"
-
-fin = open(coordfilename,'r')
-coords_raw = fin.readlines()
-
-coords_bits = [i.split(",") for i in coords_raw]
-
-coords = []
-
-for slab in coords_bits:
-    new_coord = []
-    for i in slab:
-        new_coord.append(int(re.sub(r'[^-\d]','', i)))
-    coords.append(new_coord)
-
-
-#set up the pixels (AKA 'LEDs')
-PIXEL_COUNT = len(coords) # this should be 500
-
-pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-
 # We also need MicroQiskit, a minimal version of the 'Qiskit' framework for quantum computing.
 # Since external files aren't allowed, I'll just dump it here
 # See https://github.com/qiskit-community/MicroQiskit/blob/master/README.md for more info
 ######## MicroQiskit starts here
-
 import random
 from math import cos,sin,pi
 
@@ -282,8 +301,7 @@ def simulate(qc,shots=1024,get='counts',noise_model=[]):
             counts[out] += 1
           else:
             counts[out] = 1
-        return counts
-    
+        return counts  
 ######## MicroQiskit ends here
 
 # We'll also use the `make_line` function from QuantumBlur
@@ -303,22 +321,28 @@ def make_line ( length ):
         for j in range(int(float(len(line))/2),int(len(line))):
             line[j] += '1'     
     return line
-    
-    
-# Quantum computers output bit strings, so to control the lights with a (simulation of) a quantum computer,
-# we need to assign a bit string to each light. For 500 lights we'll use 9 bits (since that allows 512)
-
-# Taking inspiration from the QuantumBlur effect
-# https://github.com/qiskit-community/QuantumBlur/blob/master/README.md
-# we'll try to assign bit strings such that the strings for neighbouring lights differ on as few bits as possible
-# The geometry of a Christmas tree probably won't make this easy!
-
-# To do this we'll first sort the points by height into 32 bins, and then sort the 16 elements in each
-# bin by radius. This gives a nice pair of coordinates to convert into binary, which should preserve some degree
-# of locality.
 
 
-# these magic numbers define the quadrant boundaries
+# Before we finally get on with actually doing something, we need to take the coordinates for the lights from Matt's file
+coordfilename = "Python/coords.txt"
+fin = open(coordfilename,'r')
+coords_raw = fin.readlines()
+coords_bits = [i.split(",") for i in coords_raw]
+coords = []
+for slab in coords_bits:
+    new_coord = []
+    for i in slab:
+        new_coord.append(int(re.sub(r'[^-\d]','', i)))
+    coords.append(new_coord)
+
+# And also set up the pixels (AKA 'LEDs')
+PIXEL_COUNT = len(coords) # this should be 500
+pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+
+
+# Finally we can get on with making a Christmas tree effect with some quantum simulations!
+
+# the following magic numbers define the quadrant boundaries
 # they were found semi manually, and split the points evenly
 theta0 = [-math.pi/2+0.39,0+0.07,math.pi/2+0.025]
 x0,y0 = -21,-26
