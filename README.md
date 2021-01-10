@@ -18,7 +18,7 @@ You're welcome to contribute! There are a few different places that your PR coul
 
 - The `examples` folder has been created as a place for any effects contained within a single Python file. Files should be named based on the effect - `fire.py` for example.
 
-- If you've done a bigger bit of work, considering keeping this in your own repository, and opening a PR to update the Further Work section below.
+- If you've done a bigger bit of work, consider keeping this in your own repository, and opening a PR to update the Further Work section below.
 
 ## Further Work
 
