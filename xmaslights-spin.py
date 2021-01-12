@@ -1,3 +1,5 @@
+from sim import *
+
 def xmaslight():
     # This is the code from my 
     
@@ -5,8 +7,6 @@ def xmaslight():
     
     # Here are the libraries I am currently using:
     import time
-    import board
-    import neopixel
     import re
     import math
     
@@ -67,7 +67,7 @@ def xmaslight():
     # the two colours in GRB order
     # if you are turning a lot of them on at once, keep their brightness down please
     colourA = [0,50,0] # red
-    colourB = [13,38,0] # orange
+    colourB = [30,40,0] # orange
     colourC = [45, 45, 0]  # yellow
     colourD = [38, 0, 0]  # green
     colourE = [38, 0, 38]  # teal
@@ -76,7 +76,7 @@ def xmaslight():
     colourH = [0, 25, 38]  # violet
 
     run = 1
-    coordmat = np.asmatrix(coords,
+    coordmat = np.asmatrix(np.array(coords) + np.array([0.,0.,220]),
                            dtype=np.float64).transpose()  # Put LED coordinates into appropriate numpy matrix form to prepare for rotations.
 
     while run == 1:
@@ -88,28 +88,29 @@ def xmaslight():
 
         while LED < len(coords):
             # Check which octant LED lives in to generate colored octahedron
-            if coordmat[0, LED] < 0:
-                if coordmat[1, LED] < 0:
-                    if coordmat[2, LED] < 0:
-                        pixels[LED] = colourA
+            if coordmat[0, LED]**2 + coordmat[1, LED]**2 + coordmat[2, LED]**2 < 220**2:
+                if coordmat[0, LED] < 0:
+                    if coordmat[1, LED] < 0:
+                        if coordmat[2, LED] < 0:
+                            pixels[LED] = colourA
+                        else:
+                            pixels[LED] = colourB
                     else:
-                        pixels[LED] = colourB
+                        if coordmat[2, LED] < 0:
+                            pixels[LED] = colourC
+                        else:
+                            pixels[LED] = colourD
                 else:
-                    if coordmat[2, LED] < 0:
-                        pixels[LED] = colourC
+                    if coordmat[1, LED] < 0:
+                        if coordmat[2,LED] < 0:
+                            pixels[LED] = colourE
+                        else:
+                            pixels[LED] = colourF
                     else:
-                        pixels[LED] = colourD
-            else:
-                if coordmat[1, LED] < 0:
-                    if coordmat[2,LED] < 0:
-                        pixels[LED] = colourE
-                    else:
-                        pixels[LED] = colourF
-                else:
-                    if coordmat[2, LED] < 0:
-                        pixels[LED] = colourG
-                    else:
-                        pixels[LED] = colourH
+                        if coordmat[2, LED] < 0:
+                            pixels[LED] = colourG
+                        else:
+                            pixels[LED] = colourH
             LED += 1
         # use the show() option as rarely as possible as it takes ages
         # do not use show() each time you change a LED but rather wait until you have changed them all
@@ -123,11 +124,11 @@ def xmaslight():
         #Rotation Matrix
 
         # Small scalar amount (in radians) to rotate for one timestep of animation (plays role of "inc" variable in Matt's original code)
-        theta = 0.1
+        theta = 0.2
         # UNIT vector axis about which to rotate for one timestep of animation
-        ux = 1.
-        uy = 0.
-        uz = 0.
+        ux = 0. #np.sqrt(1/3)
+        uy = 0. #np.sqrt(1/3)
+        uz = 1. #np.sqrt(1/3)
 
         u = np.matrix(
             [
