@@ -1,5 +1,3 @@
-from sim import *
-
 def xmaslight():
     # This is the code from my 
     
@@ -54,20 +52,14 @@ def xmaslight():
         ys.append(i[1])
         zs.append(i[2])
 
-    min_x = min(xs)
-    max_x = max(xs)
-    min_y = min(ys)
-    max_y = max(ys)
-    min_z = min(zs)
-    max_z = max(zs)
-
     slow = 0
 
+    ballradius = 220
 
-    # the two colours in GRB order
+    # the eight colours in GRB order
     # if you are turning a lot of them on at once, keep their brightness down please
     colourA = [0,50,0] # red
-    colourB = [30,40,0] # orange
+    colourB = [40,60,0] # orange
     colourC = [45, 45, 0]  # yellow
     colourD = [38, 0, 0]  # green
     colourE = [38, 0, 38]  # teal
@@ -84,11 +76,9 @@ def xmaslight():
         time.sleep(slow)
         
         LED = 0
-        ##pixels = [[0,0,0] for i in range(len(coords))] ## Dan Walsh used this line to test the code without actually having the LEDs available
-
         while LED < len(coords):
             # Check which octant LED lives in to generate colored octahedron
-            if coordmat[0, LED]**2 + coordmat[1, LED]**2 + coordmat[2, LED]**2 < 220**2:
+            if coordmat[0, LED]**2 + coordmat[1, LED]**2 + coordmat[2, LED]**2 < ballradius**2:
                 if coordmat[0, LED] < 0:
                     if coordmat[1, LED] < 0:
                         if coordmat[2, LED] < 0:
@@ -126,14 +116,14 @@ def xmaslight():
         # Small scalar amount (in radians) to rotate for one timestep of animation (plays role of "inc" variable in Matt's original code)
         theta = 0.2
         # UNIT vector axis about which to rotate for one timestep of animation
-        if cnt%100 == 0:
+        if cnt%100 == 0: #Switch up the rotation axis every so often to keep things interesting
             ux = random.uniform(-1.0, 1.0)
             uy = random.uniform(-1.0, 1.0)
             uz = random.uniform(-1.0, 1.0)
 
             length = math.sqrt(ux**2+uy**2+uz**2)
 
-            ux = ux/length
+            ux = ux / length
             uy = uy / length
             uz = uz / length
 
@@ -168,8 +158,6 @@ def xmaslight():
 
         coordmat = np.matmul(RotMat,coordmat) #Rotate all LEDs on tree according to RotMat
         cnt += 1
-        print(coordmat)
-        
     return 'DONE'
 
 
