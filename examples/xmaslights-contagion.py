@@ -96,9 +96,6 @@ def xmaslight():
     for i in treeBuildOrder:
         addToTree(i)
 
-    testFind = findWithinRadius([-100, -100, -100], 100)
-    print([coords[i] for i in testFind])
-
     def colourFade(c1, c2, fade):
         return [c1[c] * fade + c2[c] * (1 - fade) for c in range(0, 3)]
 
