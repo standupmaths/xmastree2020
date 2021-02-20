@@ -1,28 +1,29 @@
+# Here are the libraries I am currently using:
+import time
+from sim import board
+from sim import neopixel
+import re
+import math
+
+# You are welcome to add any of these:
+# import random
+# import numpy
+# import scipy
+# import sys
+
 def xmaslight():
     # This is the code from my 
     
     #NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
     
-    # Here are the libraries I am currently using:
-    import time
-    import board
-    import neopixel
-    import re
-    import math
-    
-    # You are welcome to add any of these:
-    # import random
-    # import numpy
-    # import scipy
-    # import sys
-    
+   
     # If you want to have user changable values, they need to be entered from the command line
     # so import sys sys and use sys.argv[0] etc
     # some_value = int(sys.argv[0])
     
     # IMPORT THE COORDINATES (please don't break this bit)
     
-    coordfilename = "Python/coords.txt"
+    coordfilename = "coords.txt"
 	
     fin = open(coordfilename,'r')
     coords_raw = fin.readlines()
