@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>FinFiddle</title>
+<link rel="stylesheet" href="codemirror.min.css">
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  display: flex;
+  height: 100%;
+}
+
+.editing {
+  flex: 1 1 50%;
+  height: 100%;
+  width: 50%;
+}
+
+.execution {
+  flex: 1 1 50%;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.CodeMirror {
+  height: 100%;
+}
+
+#preview, canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.coords {
+  display: none;
+}
+</style>
+<main>
+<div class="editing">
+  <textarea id="source"># Loading...</textarea>
+</div>
+<div class="execution">
+  <form>
+    <button type="button" id="play-btn" title="Play">▶</button>
+    <label>
+      <input type="checkbox" id="rotate-check" checked />
+      Rotate Tree
+    </label>
+    <label>
+      <input type="number" id="rotation-speed" value="-2" step="0.5" />
+      Rotation speed
+    </label>
+    <label>
+      <input type="number" id="max-brightness" min=0 max=255 value="50" />
+      Max Brightness
+    </label>
+    <label>
+      <input type="color" id="background-color" value="0x000000" />
+      Background Color
+    </label>
+  </form>
+  <div id="preview">
+  </div>
+</div>
+</main>
+<pre id="output"></pre>
+<pre id="Python/coords.txt" class="coords"></pre>
+<script id="vshader" type="x-shader/x-vertex">
+attribute vec3 pos;
+attribute vec4 colorIn;
+uniform float pointSize;
+uniform mat4 vMatrix;
+varying vec4 color;
+
+void main()
+{
+    gl_PointSize = pointSize;
+    color = colorIn;
+    gl_Position = vMatrix * vec4(pos.xyz, 3.0);
+}
+</script>
+<script id="fshader" type="x-shader/x-fragment">
+#ifdef GL_ES
+precision mediump float;
+#endif
+varying vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+</script>
+<script src="skulpt.min.js" type="text/javascript"></script>
+<script src="skulpt-stdlib.js" type="text/javascript"></script>
+<script src="codemirror.min.js" type="text/javascript"></script>
+<script src="mode/python/python.js" type="text/javascript"></script>
+<script src="https://threejs.org/build/three.js"  type="text/javascript"></script>
+<script src="./OrbitControls.js"  type="text/javascript"></script>
+<script type="module" src="render.js" async></script>
