@@ -1,12 +1,49 @@
+hardware_pixels = False
+software_pixels = True
+
+# Software_pixels-related imports
+if software_pixels:
+    from mpl_toolkits.mplot3d import Axes3D
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from itertools import product, combinations
+
+# Draw the lights/LEDs/Pixels as spheres
+# @param ax the matplotlib axes
+# @param led_coordinates the coordinates of the LEDs: [x, y, z]
+# @param color (=colour?) the color of the LED: [green, red, blue]. All three values are expected to be betweek 0 and 255
+def draw_light(ax, led_coordinates, color):
+    # draw sphere
+    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+    x = np.cos(u)*np.sin(v)
+    y = np.sin(u)*np.sin(v)
+    z = np.cos(v)
+
+    # This should be 1/255.0, however the default figure is then too dark
+    scale_factor = 1/55.0
+
+    ax.plot_wireframe(led_coordinates[0] + x,
+                      led_coordinates[1] + y,
+                      led_coordinates[2] + z,
+                      color=[color[1]*scale_factor, color[0]*scale_factor, color[2]*scale_factor])
+
 def xmaslight():
     # This is the code from my 
     
     #NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
-    
     # Here are the libraries I am currently using:
     import time
-    import board
-    import neopixel
+    if hardware_pixels:
+        import board
+        import neopixel
+    elif software_pixels:
+        fig = plt.figure()
+        fig.canvas.set_window_title('Xmath tree')
+        ax = fig.gca(projection='3d')
+        ax.set_aspect("auto")
+        plt.ion()
+        plt.show()
+
     import re
     import math
     
@@ -23,7 +60,7 @@ def xmaslight():
     # IMPORT THE COORDINATES (please don't break this bit)
     
     coordfilename = "Python/coords.txt"
-	
+
     fin = open(coordfilename,'r')
     coords_raw = fin.readlines()
     
@@ -40,7 +77,10 @@ def xmaslight():
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
     
-    pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    if hardware_pixels:
+        pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    else:
+        pixels = [None] * PIXEL_COUNT
     
     
     # YOU CAN EDIT FROM HERE DOWN
@@ -103,7 +143,20 @@ def xmaslight():
         
         # use the show() option as rarely as possible as it takes ages
         # do not use show() each time you change a LED but rather wait until you have changed them all
-        pixels.show()
+        if hardware_pixels:
+            pixels.show()
+        elif software_pixels:
+            # Draw the tree
+
+            plt.cla() # Clear the previous version of the tree
+
+            # Draw all pixels
+            for pixel_id in range(PIXEL_COUNT):
+                draw_light(ax, [coords[pixel_id][0], coords[pixel_id][1], coords[pixel_id][2]], pixels[pixel_id])
+
+            # Update the window
+            plt.draw()
+            plt.pause(0.001)
         
         # now we get ready for the next cycle
         
@@ -138,7 +191,6 @@ def xmaslight():
             direction = -1
         
     return 'DONE'
-
 
 # yes, I just put this at the bottom so it auto runs
 xmaslight()
