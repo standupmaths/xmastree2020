@@ -7,12 +7,11 @@ def xmaslight():
     import time
     import board
     import neopixel
-    import re
     import math
     
     # You are welcome to add any of these:
     # import random
-    # import numpy
+    import numpy
     # import scipy
     # import sys
     
@@ -22,36 +21,21 @@ def xmaslight():
     
     # IMPORT THE COORDINATES (please don't break this bit)
     
-    coordfilename = "Python/coords.txt"
-	
-    fin = open(coordfilename,'r')
-    coords_raw = fin.readlines()
-    
-    coords_bits = [i.split(",") for i in coords_raw]
-    
-    coords = []
-    
-    for slab in coords_bits:
-        new_coord = []
-        for i in slab:
-            new_coord.append(int(re.sub(r'[^-\d]','', i)))
-        coords.append(new_coord)
-    
+    coordfilename = "Python/coords.dat"
+    coords = numpy.genfromtxt(coordfilename, dtype=int)
+
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
+    assert PIXEL_COUNT == 500 # and this checks that
     
     pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
     
     
     # YOU CAN EDIT FROM HERE DOWN
     
-    # I get a list of the heights which is not overly useful here other than to set the max and min altitudes
-    heights = []
-    for i in coords:
-        heights.append(i[2])
-    
-    min_alt = min(heights)
-    max_alt = max(heights)
+    # set the max and min altitudes
+    min_alt = min(coords[:,2])
+    max_alt = max(coords[:,2])
     
     # VARIOUS SETTINGS
     
@@ -95,7 +79,7 @@ def xmaslight():
         
         LED = 0
         while LED < len(coords):
-            if math.tan(angle)*coords[LED][1] <= coords[LED][2]+c:
+            if math.tan(angle)*coords[LED,1] <= coords[LED,2]+c:
                 pixels[LED] = colourA
             else:
                 pixels[LED] = colourB
