@@ -23,3 +23,5 @@ You're welcome to contribute! There are a few different places that your PR coul
 ## Further Work
 
 Links to larger projects based on this one
+
+- [christmaslights](https://github.com/JasperHorn/christmaslights): a separate but similar project inspired by this one, including code for mapping the 3d coordinates of the LEDs
