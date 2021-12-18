@@ -1,8 +1,6 @@
 def xmaslight():
     # This is the code from my 
     
-    #NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
-    
     # Here are the libraries I am currently using:
     import time
     import board
@@ -40,7 +38,7 @@ def xmaslight():
     #set up the pixels (AKA 'LEDs')
     PIXEL_COUNT = len(coords) # this should be 500
     
-    pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False, pixel_order=neopixel.RGB)
     
     
     # YOU CAN EDIT FROM HERE DOWN
@@ -70,9 +68,9 @@ def xmaslight():
     # how much the angle changes per cycle
     inc = 0.1
     
-    # the two colours in GRB order
+    # the colours are in RGB order
     # if you are turning a lot of them on at once, keep their brightness down please
-    colourA = [0,50,50] # purple
+    colourA = [50,0,50] # purple
     colourB = [50,50,0] # yellow
     
     
